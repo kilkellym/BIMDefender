@@ -1,0 +1,279 @@
+<Window x:Class="BIMDefender.UI.GameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="BIM Defender" 
+        Width="800" 
+        Height="650"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#1a1a2e"
+        KeyDown="Window_KeyDown"
+        KeyUp="Window_KeyUp"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+        <!-- Retro-style fonts and colors -->
+        <Style x:Key="RetroText" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="Foreground" Value="#00ff00"/>
+        </Style>
+
+        <Style x:Key="ScoreText" TargetType="TextBlock" BasedOn="{StaticResource RetroText}">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style x:Key="TitleText" TargetType="TextBlock" BasedOn="{StaticResource RetroText}">
+            <Setter Property="FontSize" Value="36"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#ff6b6b"/>
+        </Style>
+
+        <Style x:Key="RetroButton" TargetType="Button">
+            <Setter Property="FontFamily" Value="Consolas"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#1a1a2e"/>
+            <Setter Property="Background" Value="#00ff00"/>
+            <Setter Property="BorderBrush" Value="#00aa00"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#33ff33"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#00cc00"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!-- HUD - Top bar -->
+        <Grid Height="40" VerticalAlignment="Top" Margin="10,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <TextBlock Text="SCORE: " Style="{StaticResource ScoreText}"/>
+                <TextBlock x:Name="ScoreText" Text="0" Style="{StaticResource ScoreText}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock Text="WAVE: " Style="{StaticResource ScoreText}"/>
+                <TextBlock x:Name="WaveText" Text="1" Style="{StaticResource ScoreText}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="LIVES: " Style="{StaticResource ScoreText}"/>
+                <TextBlock x:Name="LivesText" Text="3" Style="{StaticResource ScoreText}" Foreground="#ff6b6b"/>
+            </StackPanel>
+
+            <Button x:Name="SoundToggle" 
+                    Grid.Column="3" 
+                    Content="🔊" 
+                    FontSize="18"
+                    Width="35" 
+                    Height="35"
+                    Margin="10,0,0,0"
+                    Click="SoundToggle_Click"
+                    ToolTip="Toggle Sound">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#2a2a4e"/>
+                        <Setter Property="Foreground" Value="#00ff00"/>
+                        <Setter Property="BorderBrush" Value="#00ff00"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+
+        <!-- High Score display -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10,50,10,0">
+            <TextBlock Text="HIGH: " Style="{StaticResource RetroText}" FontSize="14" Foreground="#ffcc00"/>
+            <TextBlock x:Name="HighScoreText" Text="0" Style="{StaticResource RetroText}" FontSize="14" Foreground="#ffcc00"/>
+        </StackPanel>
+
+        <!-- Power-up indicators -->
+        <StackPanel x:Name="PowerUpIndicators" 
+                    Orientation="Horizontal" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top" 
+                    Margin="10,50,0,0">
+            <Border x:Name="ShieldIndicator" 
+                    Background="#9b59b6" 
+                    CornerRadius="3" 
+                    Padding="5,2" 
+                    Margin="0,0,5,0"
+                    Visibility="Collapsed">
+                <TextBlock Text="BACKUP" FontFamily="Consolas" FontSize="12" Foreground="White"/>
+            </Border>
+            <Border x:Name="RapidFireIndicator" 
+                    Background="#2ecc71" 
+                    CornerRadius="3" 
+                    Padding="5,2"
+                    Visibility="Collapsed">
+                <TextBlock Text="ADMIN" FontFamily="Consolas" FontSize="12" Foreground="White"/>
+            </Border>
+        </StackPanel>
+
+        <!-- Game Canvas -->
+        <Canvas x:Name="GameCanvas" 
+                Margin="0,70,0,0" 
+                Background="#1a1a2e"
+                ClipToBounds="True">
+            <Canvas.RenderTransform>
+                <TranslateTransform x:Name="CanvasShake" X="0" Y="0"/>
+            </Canvas.RenderTransform>
+        </Canvas>
+
+        <!-- Audit Bomb Flash Effect -->
+        <Grid x:Name="AuditBombFlash" Background="#3498db" Opacity="0" IsHitTestVisible="False">
+            <TextBlock Text="PURGE COMPLETE" 
+                       FontFamily="Consolas" 
+                       FontSize="48" 
+                       FontWeight="Bold" 
+                       Foreground="White" 
+                       HorizontalAlignment="Center" 
+                       VerticalAlignment="Center"
+                       Opacity="0.8"/>
+        </Grid>
+
+        <!-- Player Hit Flash Effect -->
+        <Grid x:Name="DamageFlash" Background="#e74c3c" Opacity="0" IsHitTestVisible="False"/>
+
+        <!-- Start Screen Overlay -->
+        <Grid x:Name="StartOverlay" Background="#cc1a1a2e">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="BIM DEFENDER" Style="{StaticResource TitleText}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Defend Your Model!" 
+                           Style="{StaticResource RetroText}" 
+                           FontSize="16" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,10,0,30"/>
+
+                <Button x:Name="StartButton" 
+                        Content="START GAME" 
+                        Style="{StaticResource RetroButton}"
+                        Click="StartButton_Click"
+                        HorizontalAlignment="Center"/>
+
+                <TextBlock Text="Controls: ← → or A/D to move, SPACE to shoot" 
+                           Style="{StaticResource RetroText}" 
+                           FontSize="12" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,30,0,5"/>
+                <TextBlock Text="P or ESC to pause" 
+                           Style="{StaticResource RetroText}" 
+                           FontSize="12" 
+                           HorizontalAlignment="Center"/>
+
+                <TextBlock Text="ABOUT" 
+                           Style="{StaticResource RetroText}" 
+                           FontSize="14" 
+                           FontWeight="Bold"
+                           Foreground="#3498db"
+                           HorizontalAlignment="Center" 
+                           Margin="0,20,0,0"
+                           Cursor="Hand"
+                           TextDecorations="Underline"
+                           MouseLeftButtonDown="About_Click"/>
+
+                <!-- High Scores Table -->
+                <Border Background="#2a2a4e" CornerRadius="5" Padding="20,15" Margin="0,30,0,0">
+                    <StackPanel>
+                        <TextBlock Text="HIGH SCORES" 
+                                   Style="{StaticResource RetroText}" 
+                                   FontSize="18" 
+                                   Foreground="#ffcc00"
+                                   HorizontalAlignment="Center" 
+                                   Margin="0,0,0,10"/>
+                        <ItemsControl x:Name="HighScoresList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="250">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="30"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Rank}" Style="{StaticResource RetroText}" FontSize="14"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Initials}" Style="{StaticResource RetroText}" FontSize="14"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Score}" Style="{StaticResource RetroText}" FontSize="14" HorizontalAlignment="Right"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding WaveDisplay}" Style="{StaticResource RetroText}" FontSize="14" Foreground="#888888" HorizontalAlignment="Right"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Pause Overlay -->
+        <Grid x:Name="PauseOverlay" Background="#cc1a1a2e" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="PAUSED" Style="{StaticResource TitleText}" HorizontalAlignment="Center"/>
+                <TextBlock Text="Press P or ESC to resume" 
+                           Style="{StaticResource RetroText}" 
+                           FontSize="16" 
+                           HorizontalAlignment="Center" 
+                           Margin="0,20,0,0"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Game Over Overlay -->
+        <Grid x:Name="GameOverOverlay" Background="#cc1a1a2e" Visibility="Collapsed">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                <TextBlock Text="GAME OVER" Style="{StaticResource TitleText}" HorizontalAlignment="Center"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                    <TextBlock Text="Final Score: " Style="{StaticResource RetroText}" FontSize="24"/>
+                    <TextBlock x:Name="FinalScoreText" Text="0" Style="{StaticResource RetroText}" FontSize="24"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,30">
+                    <TextBlock Text="Wave Reached: " Style="{StaticResource RetroText}" FontSize="18"/>
+                    <TextBlock x:Name="FinalWaveText" Text="1" Style="{StaticResource RetroText}" FontSize="18"/>
+                </StackPanel>
+                <Button Content="PLAY AGAIN" 
+                        Style="{StaticResource RetroButton}"
+                        Click="StartButton_Click"
+                        HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Boss Health Bar -->
+        <Grid x:Name="BossHealthBar" VerticalAlignment="Top" Margin="100,55,100,0" Visibility="Collapsed">
+            <Border Background="#333" Height="15" CornerRadius="3">
+                <Border x:Name="BossHealthFill" Background="#e74c3c" CornerRadius="3" HorizontalAlignment="Left"/>
+            </Border>
+            <TextBlock Text="CORRUPT MODEL" 
+                       Style="{StaticResource RetroText}" 
+                       FontSize="10" 
+                       Foreground="#e74c3c"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+        </Grid>
+    </Grid>
+</Window>

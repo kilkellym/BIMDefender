@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIM Defender</Name>
+    <Assembly>BIMDefender\BIMDefender.dll</Assembly>
+    <FullClassName>BIMDefender.App</FullClassName>
+    <ClientId>64e0ec1d-2ddc-4d96-99eb-90fc90bc1116</ClientId>
+    <VendorId>com.ArchSmarter</VendorId>
+    <VendorDescription>ArchSmarter, www.archsmarter.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>
