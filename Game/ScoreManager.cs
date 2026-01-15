@@ -1,8 +1,9 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace BIMDefender.Game
 {
@@ -44,7 +45,7 @@ namespace BIMDefender.Game
                 if (File.Exists(_filePath))
                 {
                     string json = File.ReadAllText(_filePath);
-                    _highScores = JsonSerializer.Deserialize<List<HighScoreEntry>>(json) ?? new List<HighScoreEntry>();
+                    _highScores = JsonConvert.DeserializeObject<List<HighScoreEntry>>(json) ?? new List<HighScoreEntry>();
                 }
                 else
                 {
@@ -71,8 +72,7 @@ namespace BIMDefender.Game
                     Directory.CreateDirectory(directory);
                 }
 
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                string json = JsonSerializer.Serialize(_highScores, options);
+                string json = JsonConvert.SerializeObject(_highScores, Formatting.Indented);
                 File.WriteAllText(_filePath, json);
             }
             catch
